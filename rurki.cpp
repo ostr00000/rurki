@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <Eigen/Dense>
+#include <Eigen/LU>
 
 using namespace Eigen;
 using namespace std;
@@ -11,7 +12,7 @@ double polowa(double a,double b){
 }
 
 double fun_g(double x,double y){
-    return 0;
+    return x*y;
 }
 #define dwie3 (2.0/3)
 #define minus1_6 (-1.0/6)
@@ -111,9 +112,10 @@ public:
         ///petle po fragmentach powierzchni
         for(int i=1;i<dlugosc;i++){
             for(int j=1;j<dlugosc;j++){
+                //if(i>1 or j>1)continue; //test
 //ustawic zerowanie wiersza i jedynke na przekatnej
                 ///jesli nieuzywana cwiartka
-                if(i>=podzial and j<=podzial){
+                if(i>podzial and j<=podzial){
                     v(index++)=0;
                 }else{
                     v(index++)=wyznaczL(i,j);
@@ -125,9 +127,19 @@ public:
                     for(int b=0;b<4;b++){
                         int wsp_Y=wyznaczIndex(i,j,b);
                         double wartosc=wartosci[a][b];
-                        m(wsp_X,wsp_Y)=wartosc;
+                        m(wsp_X,wsp_Y)=+wartosc;
                     }
                 }
+            }
+        }
+        ///zeruje punkty na brzegu (i nie tylko - te dalej tez)
+        for(int i=podzial;i<dlugosc;i++){
+            for(int j=0;j<=podzial;j++){
+                index=tablica[i][j].index;
+                for(int a=0;a<=getMaxIndex();a++){
+                    m(index,a)=0;
+                }
+                m(index,index)=1;
             }
         }
     }
@@ -148,13 +160,21 @@ int main(int argc,char** argv){
     Plansza plansza(liczbaPodzialow);
     plansza.wypisz();
 
-    VectorXd prawaStrona(plansza.getMaxIndex());
+    VectorXd prawaStrona(1+plansza.getMaxIndex());
     MatrixXd matrix=MatrixXd::Zero( 1+plansza.getMaxIndex(), 1+plansza.getMaxIndex() );
 
     plansza.wypelnijMacierz(matrix,prawaStrona);
 
-    cout<<matrix<<endl;
-    //cout << MatrixXd::Zero(2,3) << endl;
+    cout<<matrix<<endl<<endl;
+    cout<<prawaStrona<<endl<<endl;
+
+
+
+    MatrixXd wynik=matrix.inverse()*prawaStrona;
+
+    cout<<matrix.inverse()<<endl<<endl;
+
+    cout<<wynik<<endl<<endl;
 
     return 0;
 }
