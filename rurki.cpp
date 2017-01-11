@@ -36,6 +36,7 @@ double fun_g(double x,double y){
     if(abs(x)<epsilon or abs(y)<epsilon){
         return 0;
     }
+    //return x*y;
     return fun_przyklad(x,y);
 }
 
@@ -217,7 +218,7 @@ int main(int argc,char** argv){
     #endif // comp
     plansza.zapisz(wynik);
 
-    char* polecenie="gnuplot -e \"splot 'dane.txt' with pm3d";
+    char* polecenie="gnuplot -p -e \"splot 'dane.txt' with pm3d";
     system(polecenie);
 
     return 0;
