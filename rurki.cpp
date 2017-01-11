@@ -1,19 +1,15 @@
+#include <cstdlib>
 #include <iostream>
 #include <cstdlib>
+#include <fstream>
 #include <Eigen/Dense>
 #include <Eigen/LU>
+
+#define comp 1
 
 using namespace Eigen;
 using namespace std;
 
-
-double polowa(double a,double b){
-    return (a+b)/2;
-}
-
-double fun_g(double x,double y){
-    return x*y;
-}
 #define dwie3 (2.0/3)
 #define minus1_6 (-1.0/6)
 #define minus1_3 (-1.0/3)
@@ -22,6 +18,27 @@ const double wartosci[4][4]={
     {minus1_6,dwie3,minus1_6,minus1_3},
     {minus1_3,minus1_6,dwie3,minus1_6},
     {minus1_6,minus1_3,minus1_6,dwie3}};
+
+
+double polowa(double a,double b){
+    return (a+b)/2;
+}
+
+
+double fun_przyklad(double x,double y){
+    return pow(x*x,1./3);
+
+}
+
+double fun_g(double x,double y){
+    ///sprawdzenie czy (x,y) lezy na brzegu dirichleta
+    static const double epsilon=1e-10;
+    if(abs(x)<epsilon or abs(y)<epsilon){
+        return 0;
+    }
+    return fun_przyklad(x,y);
+}
+
 
 class Plansza{
     struct Punkt{
@@ -79,30 +96,30 @@ public:
         }
     }
 
+
+
     double wyznaczL(int i,int j){
         static double polowaPrzyrost=przyrost/2;
 
+        Punkt punkt=tablica[i][j];
         double ret=0;
 
-        //Punkt lewoGora=tablica[i-1][j-1];
-        Punkt prawoGora=tablica[i-1][j];
-        Punkt lewoDol=tablica[i][j-1];
-        Punkt prawoDol=tablica[i][j];
-
-        double wspMiedzyY=polowa(prawoGora.y,prawoDol.y);
-        double wspMiedzyX=polowa(lewoDol.x,prawoDol.x);
-
-        ///lewo
-        ret+=fun_g(lewoDol.x,wspMiedzyY);
-
-        ///prawo
-        ret+=fun_g(prawoDol.x,wspMiedzyY);
-
         ///gora
-        ret+=fun_g(wspMiedzyX,prawoGora.y);
-
+        if(i!=0){
+            ret+=fun_g(punkt.x,punkt.y+polowaPrzyrost);
+        }
         ///dol
-        ret+=fun_g(wspMiedzyX,prawoDol.y);
+        if(i!=dlugosc-1){
+            ret+=fun_g(punkt.x,punkt.y-polowaPrzyrost);
+        }
+        ///lewo
+        if(j!=0){
+            ret+=fun_g(punkt.x-polowaPrzyrost,punkt.y);
+        }
+        ///prawo
+        if(j!=dlugosc-1){
+            ret+=fun_g(punkt.x+polowaPrzyrost,punkt.y);
+        }
 
         return ret*polowaPrzyrost;
     }
@@ -110,16 +127,19 @@ public:
     void wypelnijMacierz(MatrixXd &m,VectorXd &v){
         int index=0;
         ///petle po fragmentach powierzchni
-        for(int i=1;i<dlugosc;i++){
-            for(int j=1;j<dlugosc;j++){
+        for(int i=0;i<dlugosc;i++){
+            for(int j=0;j<dlugosc;j++){
                 //if(i>1 or j>1)continue; //test
-//ustawic zerowanie wiersza i jedynke na przekatnej
+
                 ///jesli nieuzywana cwiartka
-                if(i>podzial and j<=podzial){
+                if(i>=podzial and j<=podzial){
                     v(index++)=0;
                 }else{
                     v(index++)=wyznaczL(i,j);
                 }
+
+                ///dalej sa sprawdzanie tylko kwadraty
+                if(i==0 or j==0)continue;
 
                 ///petle po funkcjach fi (albo psi)
                 for(int a=0;a<4;a++){
@@ -144,8 +164,21 @@ public:
         }
     }
 
+    void zapisz(MatrixXd &matrix){
+        fstream plik;
+        plik.open("dane.txt",ios::out);
+        int index=0;
+        for(int i=0;i<dlugosc;i++){
+            for(int j=0;j<dlugosc;j++){
+                plik<<tablica[i][j].x<<" "
+                    <<tablica[i][j].y<<" "
+                    <<matrix(index++,0)<<endl;
+            }
+            plik<<endl;
+        }
+        plik.close();
+    }
 };
-
 
 int main(int argc,char** argv){
     int liczbaPodzialow;
@@ -155,26 +188,37 @@ int main(int argc,char** argv){
         string s=argv[1];
         liczbaPodzialow=atoi(s.c_str());
     }
+    #if comp==1
     cout<<"liczbaPodzialow "<<liczbaPodzialow<<endl;
+    cout<<pow(-1.,dwie3)<<endl;
+    #endif // comp
 
     Plansza plansza(liczbaPodzialow);
+
+    #if comp==1
     plansza.wypisz();
+    #endif // comp
 
     VectorXd prawaStrona(1+plansza.getMaxIndex());
     MatrixXd matrix=MatrixXd::Zero( 1+plansza.getMaxIndex(), 1+plansza.getMaxIndex() );
 
     plansza.wypelnijMacierz(matrix,prawaStrona);
 
+    #if comp==1
     cout<<matrix<<endl<<endl;
     cout<<prawaStrona<<endl<<endl;
-
-
+    #endif // comp
 
     MatrixXd wynik=matrix.inverse()*prawaStrona;
 
+    #if comp==1
     cout<<matrix.inverse()<<endl<<endl;
-
     cout<<wynik<<endl<<endl;
+    #endif // comp
+    plansza.zapisz(wynik);
+
+    char* polecenie="gnuplot -e \"splot 'dane.txt' with pm3d";
+    system(polecenie);
 
     return 0;
 }
