@@ -33,9 +33,9 @@ double fun_przyklad(double x,double y){
 double fun_g(double x,double y){
     ///sprawdzenie czy (x,y) lezy na brzegu dirichleta
     static const double epsilon=1e-10;
-    if(abs(x)<epsilon or abs(y)<epsilon){
+    /*if((abs(x)<epsilon and y<0)or (abs(y)<epsilon and x<0) or (abs(x)<epsilon and abs(y)<epsilon)){
         return 0;
-    }
+    }*/
     //return x*y;
     return fun_przyklad(x,y);
 }
@@ -45,7 +45,7 @@ class Plansza{
     struct Punkt{
         double x,y;
         int index;
-        void set(int x2,int y2,int index2){
+        void set(double x2,double y2,int index2){
             x=x2;
             y=y2;
             index=index2;
@@ -61,8 +61,9 @@ public:
         int index=0;
         for(int i=0;i<dlugosc;i++){
             tablica[i]=new Punkt[dlugosc];
+            double y=1-i*przyrost;
             for(int j=0;j<dlugosc;j++){
-                tablica[i][j].set(-1+j*przyrost,1-i*przyrost,index++);
+                tablica[i][j].set(-1+j*przyrost,y,index++);
             }
         }
         max_index=--index;
@@ -191,7 +192,6 @@ int main(int argc,char** argv){
     }
     #if comp==1
     cout<<"liczbaPodzialow "<<liczbaPodzialow<<endl;
-    cout<<pow(-1.,dwie3)<<endl;
     #endif // comp
 
     Plansza plansza(liczbaPodzialow);
