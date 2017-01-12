@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <Eigen/LU>
 
-#define comp 1 /// z wypisywaniem czy bez (1 tylko dla malych podzialow)
+#define comp 0 ///z wypisywaniem czy bez (1 tylko dla malych podzialow)
 
 using namespace Eigen;
 using namespace std;
@@ -172,7 +172,25 @@ private:
     double wypelnijPrawaStrone(int i,int j){
         double ret=0;///gdy nie jest na brzegu ma wartosc 0
         Punkt punkt=tablica[i][j];
-
+        /*if(i>=podzial and j<=podzial){
+            return 0;
+        }else if(i==0 and j==0){
+            ret+=dol(punkt);
+            ret+=prawo(punkt);
+        }else if(i==0 and j==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=dol(punkt);
+        }else if(i==dlugosc-1 and j==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=gora(punkt);
+        }else if(i==0 or i==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=prawo(punkt);
+        }else if(j==0 or j==dlugosc-1){
+            ret+=gora(punkt);
+            ret+=dol(punkt);
+        }else ret=0;
+        */
         ///punkty na brzegu dirichleta lub nieistotne
         if(i>=podzial and j<=podzial){
             return 0;
@@ -190,7 +208,7 @@ private:
                 ret+=lewo(punkt);
                 ret+=prawo(punkt);
             }
-        }
+        }else
 
         ///sprawdzam dol (w lewym kacie, w prawym kacie, w srodku)
         if(i==dlugosc-1){
@@ -204,7 +222,7 @@ private:
                 ret+=lewo(punkt);
                 ret+=prawo(punkt);
             }
-        }
+        }else
         ///sprawdzam czy sa na prawym albo lewym brzegu
         if(j==0 or j==dlugosc-1){
             ret+=gora(punkt);
