@@ -36,7 +36,7 @@ double fun_g(double x,double y){
     /*if((abs(x)<epsilon and y<0)or (abs(y)<epsilon and x<0) or (abs(x)<epsilon and abs(y)<epsilon)){
         return 0;
     }*/
-    //return x*y;
+    return 1;
     return fun_przyklad(x,y);
 }
 
@@ -55,8 +55,13 @@ class Plansza{
     Punkt **tablica;
     int max_index;
     double przyrost;
+    double polowaPrzyrost;
 public:
-    Plansza(int podzial):dlugosc(podzial*2+1),podzial(podzial),przyrost(1.0/podzial){
+    Plansza(int podzial):
+        dlugosc(podzial*2+1),
+        podzial(podzial),
+        przyrost(1.0/podzial),
+        polowaPrzyrost(przyrost/2){
         tablica=new Punkt*[dlugosc];
         int index=0;
         for(int i=0;i<dlugosc;i++){
@@ -99,30 +104,40 @@ public:
     }
 
 
-
-    double wyznaczL(int i,int j){
-        static double polowaPrzyrost=przyrost/2;
-
-        Punkt punkt=tablica[i][j];
+    double gora(Punkt punkt){
+        return fun_g(punkt.x,punkt.y+polowaPrzyrost);
+    }
+    double dol(Punkt punkt){
+        return fun_g(punkt.x,punkt.y-polowaPrzyrost);
+    }
+    double lewo(Punkt punkt){
+        return fun_g(punkt.x-polowaPrzyrost,punkt.y);
+    }
+    double prawo(Punkt punkt){
+        return fun_g(punkt.x+polowaPrzyrost,punkt.y);
+    }
+    double wypelnijPrawaStrone(int i,int j){
         double ret=0;
+        Punkt punkt=tablica[i][j];
 
-        ///gora
-        if((i!=0 and i!=dlugosc-1) or j==dlugosc-1){
-            ret+=fun_g(punkt.x,punkt.y+polowaPrzyrost);
-        }
-        ///dol
-        if((i!=dlugosc-1 and i!=0) or j==0 or j==dlugosc-1 ){
-            ret+=fun_g(punkt.x,punkt.y-polowaPrzyrost);
-        }
-        ///lewo
-        if((j!=0 and j!=dlugosc-1) or i==0 or i==dlugosc-1){
-            ret+=fun_g(punkt.x-polowaPrzyrost,punkt.y);
-        }
-        ///prawo
-        if((j!=dlugosc-1 and j!=0) or i==0){
-            ret+=fun_g(punkt.x+polowaPrzyrost,punkt.y);
-        }
-
+        if(i>=podzial and j<=podzial){
+            return 0;
+        }else if(i==0 and j==0){
+            ret+=dol(punkt);
+            ret+=prawo(punkt);
+        }else if(i==0 and j==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=dol(punkt);
+        }else if(i==dlugosc-1 and j==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=gora(punkt);
+        }else if(i==0 or i==dlugosc-1){
+            ret+=lewo(punkt);
+            ret+=prawo(punkt);
+        }else if(j==0 or j==dlugosc-1){
+            ret+=gora(punkt);
+            ret+=dol(punkt);
+        }else ret=1;
         return ret*polowaPrzyrost;
     }
 
@@ -133,12 +148,8 @@ public:
             for(int j=0;j<dlugosc;j++){
                 //if(i>1 or j>1)continue; //test
 
-                ///jesli nieuzywana cwiartka
-                if((i>=podzial and j<=podzial) or (i!=0 and j!=0 and i!=dlugosc-1 and j!=dlugosc-1)){
-                    v(index++)=0;
-                }else{
-                    v(index++)=wyznaczL(i,j);
-                }
+
+                v(index++)=wypelnijPrawaStrone(i,j);
 
                 ///dalej sa sprawdzanie tylko kwadraty
                 if(i==0 or j==0)continue;
