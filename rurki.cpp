@@ -107,19 +107,19 @@ public:
         double ret=0;
 
         ///gora
-        if(i!=0){
+        if((i!=0 and i!=dlugosc-1) or j==dlugosc-1){
             ret+=fun_g(punkt.x,punkt.y+polowaPrzyrost);
         }
         ///dol
-        if(i!=dlugosc-1){
+        if((i!=dlugosc-1 and i!=0) or j==0 or j==dlugosc-1 ){
             ret+=fun_g(punkt.x,punkt.y-polowaPrzyrost);
         }
         ///lewo
-        if(j!=0){
+        if((j!=0 and j!=dlugosc-1) or i==0 or i==dlugosc-1){
             ret+=fun_g(punkt.x-polowaPrzyrost,punkt.y);
         }
         ///prawo
-        if(j!=dlugosc-1){
+        if((j!=dlugosc-1 and j!=0) or i==0){
             ret+=fun_g(punkt.x+polowaPrzyrost,punkt.y);
         }
 
@@ -134,7 +134,7 @@ public:
                 //if(i>1 or j>1)continue; //test
 
                 ///jesli nieuzywana cwiartka
-                if(i>=podzial and j<=podzial){
+                if((i>=podzial and j<=podzial) or (i!=0 and j!=0 and i!=dlugosc-1 and j!=dlugosc-1)){
                     v(index++)=0;
                 }else{
                     v(index++)=wyznaczL(i,j);
