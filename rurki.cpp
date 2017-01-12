@@ -1,10 +1,8 @@
 #include <cstdlib>
 #include <iostream>
-#include <cstdlib>
 #include <fstream>
-#include <Eigen/Dense>
+#include <Eigen/QR>
 #include <Eigen/LU>
-
 #define comp 0 ///z wypisywaniem czy bez (1 tylko dla malych podzialow)
 
 using namespace Eigen;
@@ -24,7 +22,6 @@ double fun_przyklad(double x,double y){
 }
 
 double fun_g(double x,double y){
-    //static const double epsilon=1e-10;
     //return 33;
     return fun_przyklad(x,y);
 }
@@ -172,25 +169,7 @@ private:
     double wypelnijPrawaStrone(int i,int j){
         double ret=0;///gdy nie jest na brzegu ma wartosc 0
         Punkt punkt=tablica[i][j];
-        /*if(i>=podzial and j<=podzial){
-            return 0;
-        }else if(i==0 and j==0){
-            ret+=dol(punkt);
-            ret+=prawo(punkt);
-        }else if(i==0 and j==dlugosc-1){
-            ret+=lewo(punkt);
-            ret+=dol(punkt);
-        }else if(i==dlugosc-1 and j==dlugosc-1){
-            ret+=lewo(punkt);
-            ret+=gora(punkt);
-        }else if(i==0 or i==dlugosc-1){
-            ret+=lewo(punkt);
-            ret+=prawo(punkt);
-        }else if(j==0 or j==dlugosc-1){
-            ret+=gora(punkt);
-            ret+=dol(punkt);
-        }else ret=0;
-        */
+
         ///punkty na brzegu dirichleta lub nieistotne
         if(i>=podzial and j<=podzial){
             return 0;
@@ -242,11 +221,8 @@ int main(int argc,char** argv){
         liczbaPodzialow=atoi(argv[1]);
     }
 
-    #if comp==1
-    cout<<"liczbaPodzialow "<<liczbaPodzialow<<endl<<endl;
-    #endif // comp
-
     Plansza plansza(liczbaPodzialow);
+
 
     #if comp==1
     plansza.wypisz();
@@ -254,15 +230,21 @@ int main(int argc,char** argv){
 
     VectorXd prawaStrona(1+plansza.getMaxIndex());
     MatrixXd matrix=MatrixXd::Zero( 1+plansza.getMaxIndex(), 1+plansza.getMaxIndex() );
-
     plansza.wypelnijMacierz(matrix,prawaStrona);
+
+    cout<<"liczba podzialow: "<<liczbaPodzialow<<endl;
+    cout<<"liczba obliczanej macierzy: "<<matrix.cols()<<"x"<<matrix.rows()<<endl;
 
     #if comp==1
     cout<<"macierz B:"<<endl<<matrix<<endl<<endl;
     cout<<"macierz L:"<<endl<<prawaStrona<<endl<<endl;
     #endif // comp
 
-    MatrixXd wynik=matrix.inverse()*prawaStrona;
+    HouseholderQR<MatrixXd> do_obliczen(matrix);
+    MatrixXd wynik = do_obliczen.solve(prawaStrona);
+
+    ///jest tez inny sposob obliczania, jedak ma wieksza zlozonosc
+    //MatrixXd wynik=matrix.inverse()*prawaStrona;
 
     #if comp==1
     cout<<"macierz odwrotna do macierzy B:"<<endl<<matrix.inverse()<<endl<<endl;
