@@ -11,8 +11,10 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="1" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="../eigen-eigen-f562a193118d" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -31,6 +33,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="rurki.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
