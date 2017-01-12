@@ -2,8 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <Eigen/QR>
-#include <Eigen/LU>
-#define comp 0 ///z wypisywaniem czy bez (1 tylko dla malych podzialow)
 
 using namespace Eigen;
 using namespace std;
@@ -223,11 +221,6 @@ int main(int argc,char** argv){
 
     Plansza plansza(liczbaPodzialow);
 
-
-    #if comp==1
-    plansza.wypisz();
-    #endif // comp
-
     VectorXd prawaStrona(1+plansza.getMaxIndex());
     MatrixXd matrix=MatrixXd::Zero( 1+plansza.getMaxIndex(), 1+plansza.getMaxIndex() );
     plansza.wypelnijMacierz(matrix,prawaStrona);
@@ -235,22 +228,8 @@ int main(int argc,char** argv){
     cout<<"liczba podzialow: "<<liczbaPodzialow<<endl;
     cout<<"liczba obliczanej macierzy: "<<matrix.cols()<<"x"<<matrix.rows()<<endl;
 
-    #if comp==1
-    cout<<"macierz B:"<<endl<<matrix<<endl<<endl;
-    cout<<"macierz L:"<<endl<<prawaStrona<<endl<<endl;
-    #endif // comp
-
     HouseholderQR<MatrixXd> do_obliczen(matrix);
     MatrixXd wynik = do_obliczen.solve(prawaStrona);
-
-    ///jest tez inny sposob obliczania, jedak ma wieksza zlozonosc
-    //MatrixXd wynik=matrix.inverse()*prawaStrona;
-
-    #if comp==1
-    cout<<"macierz odwrotna do macierzy B:"<<endl<<matrix.inverse()<<endl<<endl;
-    cout<<"obliczona macierz:"<<endl<<wynik<<endl<<endl;
-    #endif // comp
-
     plansza.zapisz(wynik);
 
     char* polecenie="gnuplot -p -e \"splot 'dane.txt' with pm3d\"";
